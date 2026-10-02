@@ -1,0 +1,294 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>助動詞・受動態 Quest v6</title><style>
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f7fb;margin:0;color:#18212f}.wrap{max-width:900px;margin:auto;padding:24px}.card{background:white;border-radius:20px;padding:24px;box-shadow:0 8px 30px #0001;margin-bottom:18px}.title{font-size:30px;font-weight:800}.sub{color:#667085}.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.btn{border:0;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;background:#e9eefc}.btn:hover{filter:brightness(.97)}.choice{display:block;width:100%;text-align:left;margin:10px 0;padding:15px;border:2px solid #e4e7ec;border-radius:12px;background:#fff;cursor:pointer;font-size:16px}.choice.correct{border-color:#2e9d67;background:#e9f8f0}.choice.wrong{border-color:#d84b4b;background:#fff0f0}.q{font-size:26px;font-weight:750;line-height:1.45;margin:18px 0}.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.hide{display:none}.progress{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar{height:100%;background:#667eea;width:0}.small{font-size:13px;color:#667085}.feedback{padding:12px;border-radius:12px;margin-top:12px}.good{background:#eaf8f0}.bad{background:#fff0f0}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef2ff;margin:3px;font-size:13px}
+.timer{font-size:28px;font-weight:900;color:#b42318}.result-list{margin-top:14px}.result-item{padding:12px;border:1px solid #e4e7ec;border-radius:12px;margin:8px 0;background:#f8fafc}.result-item b{font-size:16px}.mini{font-size:13px;color:#667085;margin-top:4px}.jp-translation{font-size:18px;font-weight:600;color:#475467;margin-top:10px;padding:10px 14px;background:#f8fafc;border-radius:10px}
+</style></head><body><div class="wrap"><div id="home" class="card"><div class="title">📘 助動詞・受動態 Quest v6</div><p class="sub">助動詞・受動態をゲーム感覚で練習しよう！</p>
+<div class="card" style="box-shadow:none;background:#f8fafc"><b>出題範囲</b><div style="margin-top:10px"><label><input type="radio" name="category" value="all" checked> 助動詞＋受動態</label>　
+<label><input type="radio" name="category" value="modal"> 助動詞のみ</label>　
+<label><input type="radio" name="category" value="passive"> 受動態のみ</label></div>
+<div style="margin-top:14px"><b>通常モードの問題数</b>　
+<select id="count" style="padding:8px;border-radius:8px;border:1px solid #d0d5dd"><option value="10">10問</option><option value="20">20問</option><option value="30">30問</option><option value="all">すべて</option></select></div>
+<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e4e7ec"><b>⏱️ タイムアタック</b>（問題数設定とは別）<br><span class="small">時間内は問題数を気にせず、いろいろな問題を解きます。間違えた問題は優先して再出題されます。</span><br><select id="timeLimit" style="margin-top:8px;padding:8px;border-radius:8px;border:1px solid #d0d5dd"><option value="60">1分</option><option value="120">2分</option><option value="180">3分</option><option value="240">4分</option><option value="300">5分</option></select>
+<br><label style="display:inline-block;margin-top:8px"><b>出題モード</b>　
+<select id="taMode" style="padding:8px;border-radius:8px;border:1px solid #d0d5dd"><option value="meaning">① 意味一致</option><option value="blank">② 穴埋め4択</option><option value="sentence-jp">③ 英文→日本語</option><option value="sentence-en">④ 日本語→英文</option></select></label>
+<div class="small" style="margin-top:6px">間違えた問題は2〜3問後を目安に再出題。終了後に間違いリストから復習できます。</div></div></div>
+<div class="menu"><button class="btn" onclick="choose('meaning')">① 英語 ⇄ 日本語<br>意味一致（通常）</button><button class="btn" onclick="choose('blank')">② 穴埋め4択<br>意味に合う語句（通常）</button><button class="btn" onclick="choose('sentence-jp')">③ 英文 → 日本語<br>文の意味4択（通常）</button><button class="btn" onclick="choose('sentence-en')">④ 日本語 → 英文<br>文を選ぶ4択（通常）</button></div>
+<div class="card" style="box-shadow:none;background:#eef7ff;margin-top:14px"><b style="font-size:18px">⏱️ タイムアタックを開始</b><p class="small">ここは通常モードの「問題数」と完全に別です。上の問題数設定は使わず、選んだ時間まで問題を出し続けます。</p><button class="btn" style="background:#dbeafe;width:100%" onclick="startTimeAttack()">⏱️ この設定でタイムアタック開始</button></div>
+<p class="small">①②は助動詞・受動態を分けて出題できます。②の受動態では、前置詞・語句を空欄にして出題します。</p></div><div id="game" class="hide"><div class="card"><div class="top"><b id="num"></b><b id="score"></b><b id="timer" class="timer hide"></b></div><div class="progress"><div id="bar" class="bar"></div></div><div id="prompt" class="sub" style="margin-top:16px"></div><div id="question" class="q"></div><div id="choices"></div><div id="feedback" class="feedback hide"></div><button id="next" class="btn hide" onclick="next()">次の問題 ▶</button><button id="homebtn" class="btn hide" onclick="home()">メニューへ</button></div></div></div><script>
+const DATA={"modals":[["can","～することができる（能力・可能）","I can swim very well.","私はとても上手に泳ぐことができます。","modal"],["can","～してもよい（許可）","You can use my computer.","あなたは私のコンピューターを使ってもよいです。","modal"],["be able to","～することができる（能力・可能）","She is able to speak English.","彼女は英語を話すことができます。","modal"],["could","～することができた","I could run fast when I was young.","私は若いころ速く走ることができました。","modal"],["can","～はあり得る（可能性）","It can be dangerous at night.","夜は危険なことがあります。","modal"],["Can you~?","～してくれますか？","Can you help me?","私を手伝ってくれますか？","modal"],["Could you~?","～していただけますか？","Could you open the window?","窓を開けていただけますか？","modal"],["can't [cannot]","～のはずがない（強い否定的な推量）","That can’t be true.","それが本当のはずがありません。","modal"],["can't [cannot]","～してはいけない（不許可・禁止）","You can’t park here.","ここに駐車してはいけません。","modal"],["may","～してもよい（許可）","You may leave now.","あなたは今帰ってもよいです。","modal"],["may","～かもしれない（推量）","He may be busy now.","彼は今忙しいかもしれません。","modal"],["May~?","～してもよろしいですか？","May I come in?","入ってもよろしいですか？","modal"],["may not","～してはいけない（不許可・禁止）","You may not enter this room.","この部屋に入ってはいけません。","modal"],["may [might] not","～ではないかもしれない（否定の推量）","She might not know the answer.","彼女は答えを知らないかもしれません。","modal"],["must","～しなければならない（義務・必要）","You must wear a seat belt.","シートベルトを着用しなければなりません。","modal"],["must not","～してはいけない（禁止）","You must not touch this button.","このボタンに触れてはいけません。","modal"],["have to","～しなければならない（義務・必要）","I have to get up early.","私は早起きしなければなりません。","modal"],["don't [doesn't] have to","～する必要はない（不必要）","You don't have to hurry.","あなたは急ぐ必要はありません。","modal"],["must","～に違いない（確信）","He must be tired.","彼は疲れているに違いありません。","modal"],["needn’t [need not]","～する必要はない（不必要）","You needn’t worry.","あなたは心配する必要はありません。","modal"],["should","～すべきだ、～したほうがよい（義務・助言）","You should study every day.","あなたは毎日勉強すべきです。","modal"],["ought to","～すべきだ、～したほうがよい（義務・助言）","You ought to apologize.","あなたは謝るべきです。","modal"],["shouldn't [should not]","～すべきではない、～しないほうがよい","You shouldn’t eat too much.","食べすぎないほうがよいです。","modal"],["ought not to","～すべきではない、～しないほうがよい","You ought not to waste water.","水を無駄にすべきではありません。","modal"],["had better","～しなさい、～するのがよい（命令・忠告）","You had better take an umbrella.","傘を持っていくほうがよいです。","modal"],["had better not","～するな、～してはいけない","You had better not be late.","遅れないほうがよいです。","modal"],["will","～するつもりだ（未来意志）","I will help you.","私があなたを手伝います。","modal"],["won't [will not]","どうしても～しようとしない（拒絶）","The door won’t open.","そのドアはどうしても開こうとしません。","modal"],["wouldn't [would not]","どうしても～しようとしなかった（過去の拒絶）","The car wouldn’t start.","その車はどうしても動きませんでした。","modal"],["Will you~?","～してくれますか？","Will you wait here?","ここで待ってくれますか？","modal"],["Would you~?","～していただけますか？","Would you pass me the salt?","塩を取っていただけますか？","modal"],["will","(今)～だろう（現在における推量）","That will be John at the door.","あれはドアのところにいるジョンでしょう。","modal"],["would","よく～したものだ（過去の習慣）","We would play outside after school.","私たちは放課後よく外で遊んだものです。","modal"],["used to do","(以前は)～したものだ（過去の習慣）","I used to play tennis.","私は以前テニスをしたものです。","modal"],["used to do","(以前は)～だった（過去の状態）","This town used to be quiet.","この町は以前は静かでした。","modal"],["didn't use to do","(以前は)～ではなかった","I didn't use to like coffee.","私は以前はコーヒーが好きではありませんでした。","modal"],["Did 主語 use to do~?","(以前は)～でしたか？","Did you use to live here?","以前ここに住んでいましたか？","modal"],["Shall I ~?","(私が)～しましょうか？（申し出）","Shall I carry your bag?","私があなたのかばんを持ちましょうか？","modal"],["Shall we ~?","(一緒に)～しませんか？（提案）","Shall we go now?","一緒に今行きませんか？","modal"],["must have 過去分詞","～したに違いない、～だったに違いない","She must have missed the train.","彼女は電車に乗り遅れたに違いありません。","modal"],["may [might] have 過去分詞","～したかもしれない、～だったかもしれない","He may have forgotten the meeting.","彼は会議を忘れたかもしれません。","modal"],["can't [couldn't] have 過去分詞","～したはずがない、～だったはずがない","He can’t have said that.","彼がそんなことを言ったはずがありません。","modal"],["should have 過去分詞","～すべきだったのに","I should have studied harder.","私はもっと一生懸命勉強すべきでした。","modal"],["ought to have 過去分詞","～すべきだったのに","You ought to have told me.","あなたは私に言うべきでした。","modal"],["would like to","～したいのですが","I would like to order lunch.","昼食を注文したいのですが。","modal"],["would rather ～ than…","…するよりもむしろ～したい","I would rather stay home than go out.","外出するよりも家にいたいです。","modal"],["may [might] well","おそらく～するだろう","He may well be angry.","彼はおそらく怒っているでしょう。","modal"],["may [might] as well","(気は進まないが)～したほうがいい","We may as well start now.","気は進みませんが、今始めたほうがいいです。","modal"],["only have to [have only to]","～しさえすればよい","You only have to press this button.","あなたはこのボタンを押しさえすればよいです。","modal"],["cannot [can't] 動詞の原形 too~","いくら～しすぎてもしすぎることはない","You cannot be too careful.","いくら注意してもしすぎることはありません。","modal"],["cannot [can't] help 動詞ing","～せずにはいられない[～せざるを得ない]","I cannot help laughing.","私は笑わずにはいられません。","modal"],["cannot [can't] help but 動詞の原形","～せずにはいられない[～せざるを得ない]","I cannot help but agree.","私は同意せずにはいられません。","modal"]],"passives":[["be brought up","育てられる","He was brought up by his grandparents.","彼は祖父母に育てられました。",null,"passive"],["be called off","中止される","The game was called off because of rain.","その試合は雨のため中止されました。",null,"passive"],["be laughed at","笑われる","He was laughed at by his classmates.","彼はクラスメートに笑われました。","at","passive"],["be looked up to","尊敬されている","She is looked up to by many students.","彼女は多くの生徒に尊敬されています。","up to","passive"],["be put off","延期される","The meeting was put off until Monday.","その会議は月曜日まで延期されました。","off","passive"],["be run over","（車に）ひかれる","The dog was run over by a car.","その犬は車にひかれました。","over","passive"],["be spoken to","話しかけられる","I was spoken to by a friendly man.","私は親切な男性に話しかけられました。","to","passive"],["be taken care of","世話をされる","The baby is well taken care of.","その赤ちゃんはよく世話をされています。","care of","passive"],["be covered with~","～で覆われている","The mountain is covered with snow.","その山は雪で覆われています。","with","passive"],["be filled with~","～でいっぱいである","The room was filled with people.","その部屋は人でいっぱいでした。","with","passive"],["be known to~","～に知られている","This song is known to many people.","この歌は多くの人に知られています。","to","passive"],["be surprised at~","～に驚く","I was surprised at the news.","私はその知らせに驚きました。","at","passive"],["be amazed at~","～にひどく驚く","We were amazed at his skill.","私たちは彼の技術にひどく驚きました。","at","passive"],["be shocked at~","～にショックを受ける","She was shocked at the result.","彼女はその結果にショックを受けました。","at","passive"],["be pleased with[at]~","～に喜ぶ","He was pleased with the gift.","彼はその贈り物を喜びました。","with / at","passive"],["be satisfied with~","～に満足する","I am satisfied with the service.","私はそのサービスに満足しています。","with","passive"],["be delighted with[at]~","～に大喜びする","They were delighted with the news.","彼らはその知らせに大喜びしました。","with / at","passive"],["be disappointed at[in, with]~","～にがっかりする","I was disappointed with the result.","私はその結果にがっかりしました。","at / in / with","passive"],["be excited at[about]~","～に興奮する","The children were excited about the trip.","子どもたちはその旅行に興奮していました。","at / about","passive"],["be frightened of~","～を怖がる","She is frightened of dogs.","彼女は犬を怖がります。","of","passive"],["be worried about~","～を心配する","I am worried about my test.","私はテストを心配しています。","about","passive"],["be interested in~","～に興味がある","He is interested in history.","彼は歴史に興味があります。","in","passive"],["be hurt","傷つく","My feelings were hurt by his words.","私は彼の言葉で傷つきました。",null,"passive"],["be injured","けがをする","Two players were injured in the game.","2人の選手が試合でけがをしました。",null,"passive"],["be wounded","負傷する","The soldier was wounded in the battle.","その兵士は戦闘で負傷しました。",null,"passive"],["be killed","（戦争や事故で）死ぬ","Many people were killed in the accident.","多くの人がその事故で亡くなりました。",null,"passive"],["be delayed","遅れる","The train was delayed by heavy snow.","その電車は大雪で遅れました。",null,"passive"],["be married to","～と結婚している","She is married to a doctor.","彼女は医師と結婚しています。","to","passive"],["be born","生まれる","I was born in Japan.","私は日本で生まれました。",null,"passive"],["be crowded with~","～で混んでいる","The station was crowded with people.","その駅は人で混んでいました。","with","passive"],["be raised","育つ","He was raised in Osaka.","彼は大阪で育ちました。",null,"passive"],["be dressed in~","～を着ている","She was dressed in a blue dress.","彼女は青いドレスを着ていました。","in","passive"],["be seated","座る","Please be seated.","どうぞお座りください。",null,"passive"]]};
+let mode=null,category='all',items=[],idx=0,score=0,answered=false;
+let ta=false,taSeconds=0,taTimer=null,taAnswered=0,taQueue=[],taPending=[],taWrong=new Map(),taCurrent=null,reviewOnly=false,lastTAMode='meaning';
+const $=s=>document.querySelector(s);
+const all=()=>DATA.modals.concat(DATA.passives);
+function choose(m){
+  stopTimer(); ta=false; reviewOnly=false; mode=m; category=document.querySelector('input[name="category"]:checked').value;
+  let pool=category==='modal'?DATA.modals:category==='passive'?DATA.passive:all();
+  items=pool.slice().sort(()=>Math.random()-.5);
+  const c=document.querySelector('#count').value;
+  if(c!=='all')items=items.slice(0,Math.min(Number(c),items.length));
+  score=0;idx=0;answered=false;
+  $('#home').classList.add('hide');$('#game').classList.remove('hide');$('#homebtn').classList.add('hide');$('#timer').classList.add('hide');render();
+}
+function startTimeAttack(){
+  stopTimer(); ta=true; reviewOnly=false; mode=$('#taMode').value; lastTAMode=mode; category=document.querySelector('input[name="category"]:checked').value;
+  let pool=category==='modal'?DATA.modals:category==='passive'?DATA.passives:all();
+  items=pool.slice().sort(()=>Math.random()-.5);
+  taBasePool=items.slice();
+  taQueue=taBasePool.slice(); taPending=[]; taWrong=new Map(); taAnswered=0; taCurrent=null;
+  score=0;idx=0;answered=false;taSeconds=Number($('#timeLimit').value)||60;
+  $('#home').classList.add('hide');$('#game').classList.remove('hide');$('#homebtn').classList.add('hide');
+  $('#timer').classList.remove('hide'); renderTimeAttack();
+  taTimer=setInterval(()=>{taSeconds--;updateTimer();if(taSeconds<=0)finishTimeAttack()},1000);
+  updateTimer();
+}
+function updateTimer(){if(!ta)return;$('#timer').textContent='⏱️ '+Math.max(0,taSeconds)+'秒';}
+function stopTimer(){if(taTimer){clearInterval(taTimer);taTimer=null;}}
+
+function home(){stopTimer();ta=false;reviewOnly=false;mode=null;$('#game').classList.add('hide');$('#home').classList.remove('hide');$('#homebtn').classList.add('hide');$('#timer').classList.add('hide')}
+function makeOpts(correct,pool){
+ let a=[correct],p=[...new Set(pool)].filter(v=>v!==correct);
+ while(a.length<4&&p.length)a.push(p.splice(Math.floor(Math.random()*p.length),1)[0]);
+ return a.sort(()=>Math.random()-.5);
+}
+function showChoices(opts,corrects){
+ $('#choices').innerHTML='';const accepted=Array.isArray(corrects)?corrects:[corrects];
+ opts.forEach(o=>{let b=document.createElement('button');b.className='choice';b.textContent=o;b.onclick=()=>answer(b,o,accepted);$('#choices').appendChild(b)});
+ $('#next').classList.add('hide');$('#feedback').className='feedback hide';
+}
+function answer(btn,o,accepted){
+ if(answered)return;answered=true;let ok=accepted.includes(o);
+ if(ok){
+   score++;btn.classList.add('correct');$('#feedback').className='feedback good';$('#feedback').textContent='⭕ 正解！';
+   if(ta && taCurrent){
+     const rec=taWrong.get(taCurrent.key);
+     if(rec) rec.cleared=true;
+     taPending=taPending.filter(q=>q.key!==taCurrent.key);
+   }
+ }else{
+   btn.classList.add('wrong');document.querySelectorAll('.choice').forEach(b=>{if(accepted.includes(b.textContent))b.classList.add('correct')});
+   $('#feedback').className='feedback bad';$('#feedback').innerHTML='❌ 不正解。正解：<b>'+accepted.join(' / ')+'</b>';
+   if(ta && taCurrent){
+     let rec=taWrong.get(taCurrent.key);
+     if(!rec){rec={item:taCurrent.item,wrong:0,cleared:false};taWrong.set(taCurrent.key,rec)}
+     rec.wrong++;
+     const gap=rec.wrong===1?2:1;
+     taPending.push({...taCurrent,due:taAnswered+gap});
+   }
+ }
+ $('#score').textContent='Score '+score;
+ if(ta){$('#next').classList.remove('hide');}
+ else{$('#next').classList.remove('hide');}
+}
+function render(){
+ if(ta){renderTimeAttack();return;}
+ answered=false;$('#num').textContent=(idx+1)+' / '+items.length;$('#score').textContent='Score '+score;$('#bar').style.width=(idx/items.length*100)+'%';$('#prompt').textContent='';
+ let x=items[idx];
+ if(mode==='meaning')renderMeaning(x);
+ else if(mode==='blank')renderBlank(x);
+ else if(mode==='sentence-jp'){
+   $('#prompt').textContent='この英文の日本語訳として正しいものは？';$('#question').textContent=x[2];
+   showChoices(makeOpts(x[3],choicePoolFor(x,3)),x[3]);
+ }else{
+   $('#prompt').textContent='この日本語に当てはまる英文は？';$('#question').textContent=x[3];
+   showChoices(makeOpts(x[2],choicePoolFor(x,2)),x[2]);
+ }
+}
+function itemKey(x){return x[0]+'||'+x[1]+'||'+x[2];}
+function categoryItemsFor(x){
+  return x[5]==='passive'?DATA.passives:DATA.modals;
+}
+function modalMeaningGroup(x){
+  const m=x[1];
+  // Expressions with essentially the same meaning are kept out of the
+  // same set of four choices. This prevents questions such as
+  // "can = ability" from also offering "be able to" as a second correct answer.
+  if(/することができる（能力・可能）/.test(m)) return 'ability-present';
+  if(/～することができた/.test(m)) return 'ability-past';
+  if(/してもよい（許可）/.test(m)) return 'permission';
+  if(/あり得る（可能性）/.test(m)) return 'possibility';
+  if(/してくれますか/.test(m)) return 'request-casual';
+  if(/していただけますか/.test(m)) return 'request-polite';
+  if(/はずがない（強い否定的な推量）/.test(m)) return 'strong-negative-inference';
+  if(/してはいけない（不許可・禁止）/.test(m)) return 'prohibition-can-may';
+  if(/ではないかもしれない（否定の推量）/.test(m)) return 'negative-possibility';
+  if(/しなければならない（義務・必要）/.test(m)) return 'obligation';
+  if(/する必要はない（不必要）/.test(m)) return 'no-necessity';
+  if(/に違いない（確信）/.test(m)) return 'certainty';
+  if(/すべきだ、～したほうがよい（義務・助言）/.test(m)) return 'advice';
+  if(/すべきではない、～しないほうがよい/.test(m)) return 'negative-advice';
+  if(/命令・忠告/.test(m)) return 'had-better';
+  if(/するな、～してはいけない/.test(m)) return 'had-better-not';
+  if(/するつもりだ（未来意志）/.test(m)) return 'future-intention';
+  if(/どうしても～しようとしない（拒絶）/.test(m)) return 'refusal-present';
+  if(/どうしても～しようとしなかった（過去の拒絶）/.test(m)) return 'refusal-past';
+  if(/現在における推量/.test(m)) return 'present-inference';
+  if(/過去の習慣/.test(m)) return 'past-habit';
+  if(/以前は）～だった/.test(m)) return 'past-state';
+  if(/以前は）～ではなかった/.test(m)) return 'past-state-negative';
+  if(/以前は）～したものだ/.test(m)) return 'past-habit-used';
+  if(/以前は）～でしたか/.test(m)) return 'used-to-question';
+  if(/しましょうか/.test(m)) return 'offer';
+  if(/しませんか/.test(m)) return 'suggestion';
+  if(/したに違いない/.test(m)) return 'past-certainty';
+  if(/したかもしれない/.test(m)) return 'past-possibility';
+  if(/したはずがない/.test(m)) return 'past-negative-inference';
+  if(/すべきだったのに/.test(m)) return 'past-advice';
+  if(/したいのですが/.test(m)) return 'would-like';
+  if(/むしろ～したい/.test(m)) return 'would-rather';
+  if(/おそらく～するだろう/.test(m)) return 'may-well';
+  if(/気は進まないが/.test(m)) return 'may-as-well';
+  if(/しさえすればよい/.test(m)) return 'only-have-to';
+  if(/しすぎてもしすぎることはない/.test(m)) return 'cannot-too';
+  if(/せずにはいられない/.test(m)) return 'cannot-help';
+  return m;
+}
+function choicePoolFor(x,index){
+  const all=categoryItemsFor(x);
+  if(x[5]==='modal') {
+    const group=modalMeaningGroup(x);
+    return all.filter(a=>modalMeaningGroup(a)!==group).map(a=>a[index]);
+  }
+  return all.map(a=>a[index]);
+}
+function renderTimeAttack(){
+ answered=false;$('#timer').classList.remove('hide');updateTimer();
+ taCurrent=nextTAItem();
+ if(!taCurrent){finishTimeAttack();return;}
+ let x=taCurrent.item;
+ $('#num').textContent='問題 '+(taAnswered+1);
+ $('#score').textContent='正解 '+score;
+ $('#bar').style.width='0%';
+ $('#prompt').textContent='タイムアタック：間違えた問題は早めに再出題されます';
+ if(mode==='meaning')renderMeaning(x);
+ else if(mode==='blank')renderBlank(x);
+ else if(mode==='sentence-jp'){
+   $('#prompt').textContent='この英文の日本語訳として正しいものは？';
+   $('#question').textContent=x[2];showChoices(makeOpts(x[3],choicePoolFor(x,3)),x[3]);
+ }else{
+   $('#prompt').textContent='この日本語に当てはまる英文は？';
+   $('#question').textContent=x[3];showChoices(makeOpts(x[2],choicePoolFor(x,2)),x[2]);
+ }
+}
+function nextTAItem(){
+ // First use due review items when their scheduled time has arrived.
+ let ready=taPending.filter(q=>q.due<=taAnswered);
+ if(ready.length){
+   const q=ready[0]; taPending=taPending.filter(x=>x!==q); return q;
+ }
+ if(taQueue.length){
+   const x=taQueue.shift(); return {item:x,key:itemKey(x),due:0};
+ }
+ // When all fresh questions have been seen once, start a new shuffled cycle.
+ // Pending wrong answers still have priority whenever they become due.
+ if(taQueue.length===0 && taBasePool.length){
+   taQueue=taBasePool.slice().sort(()=>Math.random()-.5);
+   // Avoid immediately repeating the current question when possible.
+   if(taQueue.length>1 && taCurrent){
+     const pos=taQueue.findIndex(q=>itemKey(q)!==taCurrent.key);
+     if(pos>0){ const tmp=taQueue[0]; taQueue[0]=taQueue[pos]; taQueue[pos]=tmp; }
+   }
+ }
+ if(taQueue.length){
+   const x=taQueue.shift(); return {item:x,key:itemKey(x),due:0};
+ }
+ if(taPending.length){
+   const q=taPending.shift(); return q;
+ }
+ return null;
+}
+function renderMeaning(x){
+ let english=x[0],meaning=x[1],reverse=Math.random()<.5;
+ if(reverse){$('#prompt').textContent='意味に合う英語を選ぼう';$('#question').textContent='「'+meaning+'」に当てはまるのは？';showChoices(makeOpts(english,choicePoolFor(x,0)),english)}
+ else{$('#prompt').textContent='英語の意味を選ぼう';$('#question').textContent='「'+english+'」の意味は？';showChoices(makeOpts(meaning,choicePoolFor(x,1)),meaning)}
+}
+function renderBlank(x){
+ if(x[5]==='modal'){
+   let b=modalBlank(x); if(!b)return next();
+   $('#prompt').textContent='助動詞の意味に合う語句を選ぼう';
+   $('#question').innerHTML=escapeHtml(b.sentence).replace(escapeHtml(b.answer),'<u>_____</u>')+
+     '<div class="jp-translation">日本語訳：'+escapeHtml(x[3])+'</div>';
+   showChoices(makeOpts(b.answer,modalPool(x,b.answer)),b.answer);
+ }else{
+   let b=passiveBlank(x); if(!b)return next();
+   $('#prompt').textContent='受動態の意味に合う前置詞・語句を選ぼう';
+   $('#question').innerHTML=escapeHtml(b.sentence).replace(b.tokenEscaped,'<u>_____</u>')+
+     '<div class="jp-translation">日本語訳：'+escapeHtml(x[3])+'</div>';
+   showChoices(makeOpts(b.answer,passivePool(x,b.answer)),b.answers);
+ }
+}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function modalBlank(x){
+ let s=x[2];
+ const candidates=['would rather','may as well','would like to','ought to have','should have','must have','may have','might have','can’t have','cannot have','couldn’t have','wouldn’t','didn’t use to','used to','had better','needn’t','will','would','could','should','ought to','might','may','must','can’t','cannot','can','shall'];
+ let found=candidates.find(c=>new RegExp('\\b'+c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(s));
+ if(!found)return null;
+ return {sentence:s,answer:found};
+}
+function modalPool(x,answer){
+  const group=modalMeaningGroup(x);
+  return DATA.modals
+    .filter(a=>modalMeaningGroup(a)!==group)
+    .map(a=>{let b=modalBlank(a);return b?b.answer:null})
+    .filter(Boolean)
+    .filter(v=>v!==answer);
+}
+function passiveBlank(x){
+ let s=x[2],raw=x[4];if(!raw)return null;
+ let answers=[...new Set(raw.split(' / ').map(v=>v.trim()).filter(Boolean))];
+ // Find ONLY the actual preposition/phrase occurring in the example sentence.
+ // e.g. "He is interested in history." -> blank is "in", not part of "interested".
+ let found=null;
+ for(const a of answers){
+   let re=new RegExp('(?<=\\s)'+a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|[.,!?])','i');
+   if(re.test(s)){found=a;break}
+ }
+ if(!found)return null;
+ let tokenEscaped=found.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+ return {sentence:s,answer:found,answers:answers,tokenEscaped:new RegExp('(?<=\\s)'+tokenEscaped+'(?=\\s|[.,!?])','i')};
+}
+function passivePool(x,answer){
+ return DATA.passives.map(a=>a[4]?a[4].split(' / ')[0].trim():null).filter(Boolean).filter(v=>v!==answer);
+}
+function next(){
+ if(ta){taAnswered++;renderTimeAttack();return;}
+ idx++;if(idx>=items.length)finish();else render();
+}
+function finish(){
+ $('#question').textContent='🎉 終了！';$('#prompt').textContent=score+' / '+items.length+' 問正解';
+ $('#choices').innerHTML='';$('#feedback').className='feedback';$('#feedback').textContent='正解率：'+Math.round(score/items.length*100)+'%';
+ $('#next').classList.add('hide');$('#homebtn').classList.remove('hide');
+}
+function finishTimeAttack(){
+ if(!ta)return;
+ stopTimer();ta=false;
+ $('#timer').classList.add('hide');$('#question').textContent='⏰ タイムアップ！';
+ const totalAnswered=taAnswered+ (answered?1:0);
+ const wrong=[...taWrong.values()];
+ const cleared=wrong.filter(r=>r.cleared).length;
+ $('#prompt').textContent='正解 '+score+'問 ／ 解答 '+totalAnswered+'問';
+ $('#choices').innerHTML='';
+ let html='<div class="feedback"><b>📝 間違えた問題</b>';
+ if(!wrong.length){
+   html+='<p>🎉 間違いなし！すべて正解でした。</p>';
+ }else{
+   html+='<div class="result-list">';
+   wrong.forEach((r,i)=>{
+     html+='<div class="result-item"><b>'+(i+1)+'. '+escapeHtml(r.item[0])+'</b>'+
+       '<div>'+escapeHtml(r.item[1])+'</div>'+
+       '<div class="mini">間違い '+r.wrong+'回'+(r.cleared?'　✅ 再出題で正解':'　⚠️ 時間切れまでに未正解')+'</div></div>';
+   });
+   html+='</div>';
+   html+='<button class="btn" style="margin-top:12px" onclick="startWrongReview()">📚 間違えた問題だけ復習</button>';
+ }
+ html+='</div>';
+ $('#feedback').className='feedback';$('#feedback').innerHTML=html;
+ $('#next').classList.add('hide');$('#homebtn').classList.remove('hide');
+}
+function startWrongReview(){
+ const wrong=[...taWrong.values()].map(r=>r.item);
+ if(!wrong.length)return;
+ stopTimer();ta=false;reviewOnly=true;mode=lastTAMode;items=wrong.slice().sort(()=>Math.random()-.5);
+ idx=0;score=0;answered=false;
+ $('#homebtn').classList.add('hide');$('#timer').classList.add('hide');
+ render();
+}
+</script></body></html>
